@@ -134,6 +134,10 @@ final class AddBarView: NSView {
     }
 }
 
+final class FlippedView: NSView {
+    override var isFlipped: Bool { true }
+}
+
 final class DeskWindow: NSWindow {
     var onInteraction: (() -> Void)?
 
@@ -376,4 +380,3 @@ final class TaskRowView: NSView {
         onOpen?(taskID)
     }
 }
-

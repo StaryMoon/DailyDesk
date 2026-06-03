@@ -12,6 +12,10 @@ let supportDir = appHomeDirectory
 let stateURL = supportDir.appendingPathComponent("state.json")
 let configURL = supportDir.appendingPathComponent("config.json")
 let desktopParkingLevel = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopIconWindow)))
+let taskRowHeight: CGFloat = 48
+let taskStackSpacing: CGFloat = 8
+let minWindowHeight: CGFloat = 430
+let taskListChromeHeight: CGFloat = 132
 
 enum Priority: String, Codable, CaseIterable {
     case red

@@ -14,5 +14,5 @@
   - quick-open file and URL targets
 - Moved hard-coded paths and default tasks into local `config.json`.
 - Added a lightweight in-app daily appearance timer while the app is running.
+- Added auto-growing task window height and a transparent scroll view for longer task lists.
 - Added App Store readiness notes and release packaging docs.
-

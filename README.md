@@ -13,6 +13,8 @@ DailyDesk is a lightweight macOS desktop day planner: a transparent glass widget
 - Daily generated task templates.
 - Weekly and before-weekly repeat rules.
 - Manual task input for today's ad-hoc work.
+- Auto-growing window height as the task list grows.
+- Transparent scrolling task area when the list exceeds available screen height.
 - Click-to-complete progress ring.
 - Configurable quick-open targets for local files and links.
 - Preferences window for task templates, repeat rules, daily appearance time, pin behavior, and quick links.
@@ -106,6 +108,7 @@ The floating window intentionally keeps a few AppKit details from the original p
 - The add bar calls `focusInput()` so users can click the broader glass area, not only the text field.
 - Standard editing shortcuts and the Edit context menu are explicitly wired for the input field.
 - Unpin never calls `orderOut`; it parks the visible widget at `CGWindowLevel.desktopIconWindow` after deactivation.
+- `adjustWindowHeight(forTaskCount:)` keeps task rows at a stable height and grows the window before falling back to a transparent scroll view.
 
 Do not remove these pieces unless you have a replacement tested inside a borderless `NSPanel`/`NSWindow`.
 
@@ -124,4 +127,3 @@ DailyDesk is not App Store-ready yet. See [docs/APP_STORE_READINESS.md](docs/APP
 ## License
 
 MIT License.
-

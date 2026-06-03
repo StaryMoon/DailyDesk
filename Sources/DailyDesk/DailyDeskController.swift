@@ -8,6 +8,8 @@ final class DailyDeskController: NSObject, NSApplicationDelegate {
     private let dateLabel = NSTextField(labelWithString: "")
     private let ring = RingView()
     private let progressLabel = NSTextField(labelWithString: "")
+    private let scrollView = NSScrollView()
+    private let scrollDocument = FlippedView()
     private let stack = NSStackView()
     private let addBar = AddBarView()
     private let input = FocusTextField()
@@ -121,9 +123,17 @@ final class DailyDeskController: NSObject, NSApplicationDelegate {
         root.addSubview(settings)
 
         stack.orientation = .vertical
-        stack.spacing = 8
+        stack.spacing = taskStackSpacing
         stack.distribution = .fill
-        root.addSubview(stack)
+        stack.translatesAutoresizingMaskIntoConstraints = true
+        scrollDocument.addSubview(stack)
+        scrollView.documentView = scrollDocument
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.scrollerStyle = .overlay
+        root.addSubview(scrollView)
 
         addBar.onClick = { [weak self] in self?.focusInput() }
         root.addSubview(addBar)
@@ -222,7 +232,7 @@ final class DailyDeskController: NSObject, NSApplicationDelegate {
             let row = TaskRowView(task: task, showsOpenButton: openURL(for: task) != nil)
             row.onToggle = { [weak self] id in self?.toggle(id) }
             row.onOpen = { [weak self] id in self?.openTask(id) }
-            row.heightAnchor.constraint(equalToConstant: 48).isActive = true
+            row.heightAnchor.constraint(equalToConstant: taskRowHeight).isActive = true
             stack.addArrangedSubview(row)
         }
 
@@ -231,7 +241,32 @@ final class DailyDeskController: NSObject, NSApplicationDelegate {
         ring.progress = CGFloat(done) / CGFloat(total)
         progressLabel.stringValue = "\(done)/\(ordered.count)"
         dateLabel.stringValue = compactDateString()
+        adjustWindowHeight(forTaskCount: ordered.count)
         layoutRoot()
+    }
+
+    private func taskListHeight(for count: Int) -> CGFloat {
+        let rows = max(count, 1)
+        return CGFloat(rows) * taskRowHeight + CGFloat(max(rows - 1, 0)) * taskStackSpacing
+    }
+
+    private func desiredWindowHeight(forTaskCount count: Int) -> CGFloat {
+        max(minWindowHeight, taskListChromeHeight + taskListHeight(for: count))
+    }
+
+    private func adjustWindowHeight(forTaskCount count: Int) {
+        guard let screen = window.screen ?? NSScreen.main else { return }
+        let visible = screen.visibleFrame
+        let maxHeight = max(minWindowHeight, visible.height - 32)
+        let desiredHeight = min(desiredWindowHeight(forTaskCount: count), maxHeight)
+        var frame = window.frame
+        guard abs(frame.height - desiredHeight) > 1 else { return }
+
+        let top = min(frame.maxY, visible.maxY - 12)
+        frame.size.height = desiredHeight
+        frame.origin.y = max(visible.minY + 12, top - desiredHeight)
+        frame.origin.x = min(max(frame.origin.x, visible.minX + 12), visible.maxX - frame.width - 12)
+        window.setFrame(frame, display: false, animate: false)
     }
 
     private func scheduleNextAppearance() {
@@ -283,7 +318,14 @@ final class DailyDeskController: NSObject, NSApplicationDelegate {
         addBar.frame = NSRect(x: inset, y: 16, width: bounds.width - inset * 2, height: 40)
         input.frame = NSRect(x: inset + 14, y: 25, width: bounds.width - 180, height: 22)
         priorityPicker.frame = NSRect(x: bounds.width - 136, y: 22, width: 86, height: 28)
-        stack.frame = NSRect(x: inset, y: 70, width: bounds.width - 54, height: max(0, bounds.height - 132))
+        let taskArea = NSRect(x: inset, y: 70, width: bounds.width - 54, height: max(0, bounds.height - taskListChromeHeight))
+        let contentHeight = taskListHeight(for: stack.arrangedSubviews.count)
+        let documentHeight = max(taskArea.height, contentHeight)
+        scrollView.frame = taskArea
+        scrollDocument.frame = NSRect(x: 0, y: 0, width: taskArea.width, height: documentHeight)
+        stack.frame = NSRect(x: 0, y: 0, width: taskArea.width, height: contentHeight)
+        scrollView.contentView.scroll(to: .zero)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
     }
 
     private func focusInput() {
