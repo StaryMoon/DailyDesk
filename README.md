@@ -2,7 +2,7 @@
 
 DailyDesk is a lightweight macOS desktop day planner: a transparent glass widget that sits on your desktop and shows the few tasks that matter today.
 
-![DailyDesk screenshot](Screenshots/dailydesk_refined_2.png)
+![DailyDesk screenshot](Screenshots/dailydesk_desktop.png)
 
 ## Features
 

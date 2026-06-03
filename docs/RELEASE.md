@@ -12,7 +12,7 @@ open Build/DailyDesk.app
 Recommended release assets:
 
 - `DailyDesk.app.zip`
-- screenshot from `Screenshots/dailydesk_refined_2.png`
+- screenshot from `Screenshots/dailydesk_desktop.png`
 - release notes copied from `CHANGELOG.md`
 
 Create the zip:
@@ -46,4 +46,3 @@ The current local packaging script is not the final App Store submission path. F
 - configure entitlements
 - archive from Xcode
 - submit through App Store Connect
-
