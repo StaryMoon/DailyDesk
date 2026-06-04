@@ -1,6 +1,6 @@
 # DailyDesk
 
-DailyDesk is a lightweight macOS desktop day planner: a transparent glass widget that sits on your desktop and shows the few tasks that matter today.
+DailyDesk is a lightweight macOS desktop day planner: a transparent glass widget that sits on your desktop, shows the few tasks that matter today, and rewards completed work with a tiny desktop pet.
 
 ![DailyDesk screenshot](Screenshots/dailydesk_desktop.png)
 
@@ -16,6 +16,10 @@ DailyDesk is a lightweight macOS desktop day planner: a transparent glass widget
 - Auto-growing window height as the task list grows.
 - Transparent scrolling task area when the list exceeds available screen height.
 - Click-to-complete progress ring.
+- Completion rewards with local-only coins.
+- A tiny desktop pet that levels up as you finish more tasks.
+- Calendar warehouse for recent daily completion records.
+- Virtual shop for pet accessories such as ribbons, scarves, stars, and crowns.
 - Configurable quick-open targets for local files and links.
 - Preferences window for task templates, repeat rules, daily appearance time, pin behavior, and quick links.
 - Pin mode:
@@ -66,6 +70,8 @@ User data is stored locally:
 ~/Library/Application Support/DailyDesk/config.json
 ```
 
+`state.json` stores task completion, coin balance, daily records, and equipped pet accessories. DailyDesk does not upload or sync this data.
+
 The Preferences window edits:
 
 - daily appearance time
@@ -87,6 +93,7 @@ Examples:
 ```text
 科研 3h | urgent | daily |  | none |
 AI 技术日报 | important | daily |  | ai-briefing |
+健身 | light | daily |  | none |
 家教 | urgent | weekly | 1,6,7 | none |
 家教备课 | important | prep-before-weekly | 1,6,7 | none |
 ```
@@ -109,15 +116,18 @@ The floating window intentionally keeps a few AppKit details from the original p
 - Standard editing shortcuts and the Edit context menu are explicitly wired for the input field.
 - Unpin never calls `orderOut`; it parks the visible widget at `CGWindowLevel.desktopIconWindow` after deactivation.
 - `adjustWindowHeight(forTaskCount:)` keeps task rows at a stable height and grows the window before falling back to a transparent scroll view.
+- Reward state is saved locally inside `AppState`; completing the same task repeatedly does not mint duplicate coins.
+- The calendar warehouse and virtual shop are normal AppKit panel windows, not background monitors.
 
 Do not remove these pieces unless you have a replacement tested inside a borderless `NSPanel`/`NSWindow`.
 
 ## Roadmap
 
 - v0.1: Engineering cleanup, configurable templates, GitHub release build.
-- v0.2: Menu bar item, window recovery, import/export config.
-- v0.3: Multiple task sets and richer template editor.
-- v0.4: User-consented Login Item helper for daily auto-open.
+- v0.2: Local reward loop, desktop pet, calendar warehouse, virtual shop.
+- v0.3: Menu bar item, window recovery, import/export config.
+- v0.4: Multiple task sets and richer template editor.
+- v0.5: User-consented Login Item helper for daily auto-open.
 - v1.0: Signed, notarized, and App Store-ready build.
 
 ## App Store Status

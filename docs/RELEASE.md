@@ -19,7 +19,7 @@ Create the zip:
 
 ```bash
 cd Build
-ditto -c -k --keepParent DailyDesk.app DailyDesk-0.1.0-macOS.zip
+ditto -c -k --keepParent DailyDesk.app DailyDesk-0.2.0-macOS.zip
 ```
 
 ## Developer ID distribution later

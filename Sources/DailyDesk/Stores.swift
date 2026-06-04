@@ -40,10 +40,16 @@ func ensureSupportDirectory() {
 
 func loadConfig() -> AppConfig {
     guard let data = try? Data(contentsOf: configURL),
-          let config = try? JSONDecoder().decode(AppConfig.self, from: data)
+          var config = try? JSONDecoder().decode(AppConfig.self, from: data)
     else {
         saveConfig(.defaults)
         return .defaults
+    }
+    let existingIDs = Set(config.templates.map(\.id))
+    let missingDefaults = AppConfig.defaults.templates.filter { !existingIDs.contains($0.id) }
+    if !missingDefaults.isEmpty {
+        config.templates.append(contentsOf: missingDefaults)
+        saveConfig(config)
     }
     return config
 }
@@ -141,7 +147,11 @@ func generateDailyTasks(force: Bool = false, date: Date = Date(), config: AppCon
     }
 
     state.tasksByDate[key] = tasks
+    var record = state.dailyRecords[key] ?? DayRecord()
+    record.completedCount = tasks.filter { $0.completed }.count
+    record.totalCount = tasks.count
+    record.lastUpdated = Date().timeIntervalSince1970
+    state.dailyRecords[key] = record
     saveState(state)
     return added
 }
-

@@ -15,6 +15,8 @@ This keeps the project buildable now while leaving room for a later Xcode projec
 
 Use `DAILYDESK_HOME=/tmp/somewhere` for isolated CLI tests.
 
+`state.json` also stores reward state: daily completion records, coin balance, total earned coins, owned pet accessories, and the currently equipped pet accessory. This state is local-only.
+
 ## Preserved prototype behaviors
 
 - Accessory app with no Dock icon.
@@ -25,3 +27,9 @@ Use `DAILYDESK_HOME=/tmp/somewhere` for isolated CLI tests.
 - Unpinned desktop-icon-level parking after deactivation.
 - `--pin` and `--unpin` CLI recovery helpers.
 
+## v0.2 reward loop
+
+- Completing a task grants local coins once per task ID.
+- Coin rewards scale with priority and include a full-day completion bonus.
+- The main widget shows a small desktop pet and current coin balance.
+- Calendar warehouse and virtual shop are AppKit panels opened manually by the user.

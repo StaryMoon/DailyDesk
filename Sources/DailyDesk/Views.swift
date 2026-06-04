@@ -83,6 +83,160 @@ final class RingView: NSView {
     }
 }
 
+final class PetView: NSView {
+    var equippedItemID: String?
+    var completionProgress: CGFloat = 0
+    var totalCoins: Int = 0
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        let rect = bounds.insetBy(dx: 6, dy: 6)
+        let bodyRect = NSRect(x: rect.midX - 18, y: rect.midY - 16, width: 36, height: 34)
+        let body = NSBezierPath(roundedRect: bodyRect, xRadius: 18, yRadius: 18)
+        NSColor(calibratedRed: 0.88, green: 0.94, blue: 1.00, alpha: 0.92).setFill()
+        body.fill()
+        NSColor.white.withAlphaComponent(0.36).setStroke()
+        body.lineWidth = 1
+        body.stroke()
+
+        let leftEar = NSBezierPath()
+        leftEar.move(to: CGPoint(x: bodyRect.minX + 6, y: bodyRect.maxY - 4))
+        leftEar.line(to: CGPoint(x: bodyRect.minX + 13, y: bodyRect.maxY + 10))
+        leftEar.line(to: CGPoint(x: bodyRect.minX + 18, y: bodyRect.maxY - 1))
+        leftEar.close()
+        let rightEar = NSBezierPath()
+        rightEar.move(to: CGPoint(x: bodyRect.maxX - 6, y: bodyRect.maxY - 4))
+        rightEar.line(to: CGPoint(x: bodyRect.maxX - 13, y: bodyRect.maxY + 10))
+        rightEar.line(to: CGPoint(x: bodyRect.maxX - 18, y: bodyRect.maxY - 1))
+        rightEar.close()
+        NSColor(calibratedRed: 0.78, green: 0.88, blue: 1.00, alpha: 0.92).setFill()
+        leftEar.fill()
+        rightEar.fill()
+
+        NSColor(calibratedWhite: 0.05, alpha: 0.86).setFill()
+        NSBezierPath(ovalIn: NSRect(x: bodyRect.minX + 10, y: bodyRect.midY + 2, width: 4, height: 5)).fill()
+        NSBezierPath(ovalIn: NSRect(x: bodyRect.maxX - 14, y: bodyRect.midY + 2, width: 4, height: 5)).fill()
+
+        let smile = NSBezierPath()
+        smile.move(to: CGPoint(x: bodyRect.midX - 6, y: bodyRect.midY - 6))
+        smile.curve(
+            to: CGPoint(x: bodyRect.midX + 6, y: bodyRect.midY - 6),
+            controlPoint1: CGPoint(x: bodyRect.midX - 3, y: bodyRect.midY - 10),
+            controlPoint2: CGPoint(x: bodyRect.midX + 3, y: bodyRect.midY - 10)
+        )
+        NSColor(calibratedWhite: 0.05, alpha: 0.72).setStroke()
+        smile.lineWidth = 1.3
+        smile.stroke()
+
+        let sparkleAlpha = max(0.20, min(0.95, completionProgress))
+        NSColor(calibratedRed: 0.42, green: 0.88, blue: 0.80, alpha: sparkleAlpha).setFill()
+        NSBezierPath(ovalIn: NSRect(x: bodyRect.maxX - 3, y: bodyRect.maxY - 2, width: 8, height: 8)).fill()
+
+        drawAccessory(in: bodyRect)
+
+        let level = max(1, totalCoins / 120 + 1)
+        let text = "Lv \(level)" as NSString
+        text.draw(
+            in: NSRect(x: bounds.midX - 22, y: 0, width: 44, height: 14),
+            withAttributes: [
+                .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .semibold),
+                .foregroundColor: NSColor.white.withAlphaComponent(0.66),
+                .paragraphStyle: centeredParagraph()
+            ]
+        )
+    }
+
+    private func drawAccessory(in bodyRect: NSRect) {
+        guard let equippedItemID else { return }
+        switch equippedItemID {
+        case "ribbon":
+            NSColor(calibratedRed: 0.96, green: 0.38, blue: 0.60, alpha: 0.95).setFill()
+            NSBezierPath(ovalIn: NSRect(x: bodyRect.midX - 13, y: bodyRect.maxY + 1, width: 12, height: 8)).fill()
+            NSBezierPath(ovalIn: NSRect(x: bodyRect.midX + 1, y: bodyRect.maxY + 1, width: 12, height: 8)).fill()
+            NSBezierPath(ovalIn: NSRect(x: bodyRect.midX - 3, y: bodyRect.maxY + 2, width: 6, height: 6)).fill()
+        case "scarf":
+            NSColor(calibratedRed: 0.42, green: 0.88, blue: 0.80, alpha: 0.94).setFill()
+            NSBezierPath(roundedRect: NSRect(x: bodyRect.minX + 8, y: bodyRect.minY + 5, width: 20, height: 5), xRadius: 2.5, yRadius: 2.5).fill()
+        case "star":
+            let star = "*" as NSString
+            star.draw(in: NSRect(x: bodyRect.midX - 6, y: bodyRect.minY + 2, width: 12, height: 12), withAttributes: [
+                .font: NSFont.systemFont(ofSize: 11, weight: .bold),
+                .foregroundColor: NSColor(calibratedRed: 0.98, green: 0.78, blue: 0.36, alpha: 0.96)
+            ])
+        case "crown":
+            NSColor(calibratedRed: 0.98, green: 0.78, blue: 0.36, alpha: 0.96).setFill()
+            let crown = NSBezierPath()
+            crown.move(to: CGPoint(x: bodyRect.midX - 13, y: bodyRect.maxY + 1))
+            crown.line(to: CGPoint(x: bodyRect.midX - 8, y: bodyRect.maxY + 12))
+            crown.line(to: CGPoint(x: bodyRect.midX, y: bodyRect.maxY + 4))
+            crown.line(to: CGPoint(x: bodyRect.midX + 8, y: bodyRect.maxY + 12))
+            crown.line(to: CGPoint(x: bodyRect.midX + 13, y: bodyRect.maxY + 1))
+            crown.close()
+            crown.fill()
+        default:
+            break
+        }
+    }
+}
+
+final class DayCellView: NSView {
+    var dateKey = ""
+    var record = DayRecord()
+
+    override func draw(_ dirtyRect: NSRect) {
+        let progress = record.totalCount == 0 ? 0 : CGFloat(record.completedCount) / CGFloat(record.totalCount)
+        let path = NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), xRadius: 8, yRadius: 8)
+        let color = NSColor(calibratedRed: 0.42, green: 0.88, blue: 0.80, alpha: 0.12 + 0.46 * progress)
+        color.setFill()
+        path.fill()
+        NSColor.white.withAlphaComponent(0.12 + 0.20 * progress).setStroke()
+        path.lineWidth = 0.8
+        path.stroke()
+
+        let day = String(dateKey.suffix(2)) as NSString
+        day.draw(in: NSRect(x: 7, y: bounds.height - 19, width: bounds.width - 14, height: 14), withAttributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .semibold),
+            .foregroundColor: NSColor.white.withAlphaComponent(0.86)
+        ])
+        let summary = "\(record.completedCount)/\(record.totalCount)" as NSString
+        summary.draw(in: NSRect(x: 7, y: 18, width: bounds.width - 14, height: 14), withAttributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .medium),
+            .foregroundColor: NSColor.white.withAlphaComponent(0.62)
+        ])
+        if record.coinsEarned > 0 {
+            let coins = "+\(record.coinsEarned)" as NSString
+            coins.draw(in: NSRect(x: 7, y: 5, width: bounds.width - 14, height: 12), withAttributes: [
+                .font: NSFont.monospacedDigitSystemFont(ofSize: 8.5, weight: .medium),
+                .foregroundColor: NSColor(calibratedRed: 0.98, green: 0.78, blue: 0.36, alpha: 0.92)
+            ])
+        }
+    }
+}
+
+final class ShopActionButton: NSButton {
+    let itemID: String
+
+    init(itemID: String, title: String, target: AnyObject?, action: Selector) {
+        self.itemID = itemID
+        super.init(frame: .zero)
+        self.title = title
+        self.target = target
+        self.action = action
+        bezelStyle = .rounded
+        font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+    }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+}
+
+func centeredParagraph() -> NSParagraphStyle {
+    let paragraph = NSMutableParagraphStyle()
+    paragraph.alignment = .center
+    return paragraph
+}
+
 final class IconButton: NSButton {
     init(symbol: String, action: Selector, target: AnyObject?) {
         super.init(frame: .zero)

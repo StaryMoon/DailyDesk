@@ -15,7 +15,7 @@ let desktopParkingLevel = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desk
 let taskRowHeight: CGFloat = 48
 let taskStackSpacing: CGFloat = 8
 let minWindowHeight: CGFloat = 430
-let taskListChromeHeight: CGFloat = 132
+let taskListChromeHeight: CGFloat = 154
 
 enum Priority: String, Codable, CaseIterable {
     case red
@@ -132,10 +132,97 @@ struct Task: Codable, Equatable {
     var createdAt: TimeInterval
 }
 
+struct DayRecord: Codable, Equatable {
+    var completedCount: Int
+    var totalCount: Int
+    var coinsEarned: Int
+    var awardedTaskIDs: [String]
+    var lastUpdated: TimeInterval
+
+    init(
+        completedCount: Int = 0,
+        totalCount: Int = 0,
+        coinsEarned: Int = 0,
+        awardedTaskIDs: [String] = [],
+        lastUpdated: TimeInterval = 0
+    ) {
+        self.completedCount = completedCount
+        self.totalCount = totalCount
+        self.coinsEarned = coinsEarned
+        self.awardedTaskIDs = awardedTaskIDs
+        self.lastUpdated = lastUpdated
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case completedCount
+        case totalCount
+        case coinsEarned
+        case awardedTaskIDs
+        case lastUpdated
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        completedCount = try container.decodeIfPresent(Int.self, forKey: .completedCount) ?? 0
+        totalCount = try container.decodeIfPresent(Int.self, forKey: .totalCount) ?? 0
+        coinsEarned = try container.decodeIfPresent(Int.self, forKey: .coinsEarned) ?? 0
+        awardedTaskIDs = try container.decodeIfPresent([String].self, forKey: .awardedTaskIDs) ?? []
+        lastUpdated = try container.decodeIfPresent(TimeInterval.self, forKey: .lastUpdated) ?? 0
+    }
+}
+
 struct AppState: Codable {
     var tasksByDate: [String: [Task]] = [:]
     var windowFrame: String?
     var pinned: Bool = true
+    var dailyRecords: [String: DayRecord] = [:]
+    var coinBalance: Int = 0
+    var totalCoinsEarned: Int = 0
+    var ownedShopItemIDs: [String] = []
+    var equippedShopItemID: String?
+
+    init(
+        tasksByDate: [String: [Task]] = [:],
+        windowFrame: String? = nil,
+        pinned: Bool = true,
+        dailyRecords: [String: DayRecord] = [:],
+        coinBalance: Int = 0,
+        totalCoinsEarned: Int = 0,
+        ownedShopItemIDs: [String] = [],
+        equippedShopItemID: String? = nil
+    ) {
+        self.tasksByDate = tasksByDate
+        self.windowFrame = windowFrame
+        self.pinned = pinned
+        self.dailyRecords = dailyRecords
+        self.coinBalance = coinBalance
+        self.totalCoinsEarned = totalCoinsEarned
+        self.ownedShopItemIDs = ownedShopItemIDs
+        self.equippedShopItemID = equippedShopItemID
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case tasksByDate
+        case windowFrame
+        case pinned
+        case dailyRecords
+        case coinBalance
+        case totalCoinsEarned
+        case ownedShopItemIDs
+        case equippedShopItemID
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        tasksByDate = try container.decodeIfPresent([String: [Task]].self, forKey: .tasksByDate) ?? [:]
+        windowFrame = try container.decodeIfPresent(String.self, forKey: .windowFrame)
+        pinned = try container.decodeIfPresent(Bool.self, forKey: .pinned) ?? true
+        dailyRecords = try container.decodeIfPresent([String: DayRecord].self, forKey: .dailyRecords) ?? [:]
+        coinBalance = try container.decodeIfPresent(Int.self, forKey: .coinBalance) ?? 0
+        totalCoinsEarned = try container.decodeIfPresent(Int.self, forKey: .totalCoinsEarned) ?? 0
+        ownedShopItemIDs = try container.decodeIfPresent([String].self, forKey: .ownedShopItemIDs) ?? []
+        equippedShopItemID = try container.decodeIfPresent(String.self, forKey: .equippedShopItemID)
+    }
 }
 
 struct QuickLinks: Codable, Equatable {
@@ -228,6 +315,16 @@ struct AppConfig: Codable, Equatable {
                 enabled: true
             ),
             TaskTemplate(
+                id: "daily-fitness",
+                title: "健身",
+                priority: .teal,
+                recurrence: .daily,
+                weekdays: [],
+                openAction: .none,
+                customTarget: "",
+                enabled: true
+            ),
+            TaskTemplate(
                 id: "daily-github",
                 title: "GitHub PR / 项目宣传",
                 priority: .amber,
@@ -266,4 +363,37 @@ struct TaskSpec {
     var generatedKey: String
     var title: String
     var priority: Priority
+}
+
+struct ShopItem {
+    let id: String
+    let title: String
+    let subtitle: String
+    let cost: Int
+    let symbolName: String
+}
+
+let shopCatalog: [ShopItem] = [
+    ShopItem(id: "ribbon", title: "月光蝴蝶结", subtitle: "桌宠头顶的小小仪式感", cost: 60, symbolName: "gift.fill"),
+    ShopItem(id: "scarf", title: "薄荷围巾", subtitle: "完成日常后一起去散步", cost: 120, symbolName: "circle.hexagongrid.fill"),
+    ShopItem(id: "star", title: "星星项圈", subtitle: "让桌宠看起来更精神", cost: 180, symbolName: "star.fill"),
+    ShopItem(id: "crown", title: "研究员小王冠", subtitle: "全清很多天以后再戴它", cost: 320, symbolName: "crown.fill")
+]
+
+func shopItem(with id: String?) -> ShopItem? {
+    guard let id else { return nil }
+    return shopCatalog.first { $0.id == id }
+}
+
+func rewardCoins(priority: Priority, completedIndex: Int, total: Int) -> Int {
+    let base: Int
+    switch priority {
+    case .red: base = 22
+    case .amber: base = 15
+    case .teal: base = 10
+    }
+    let progress = Double(completedIndex) / Double(max(total, 1))
+    let curve = Int((pow(progress, 2.05) * 28).rounded())
+    let finishBonus = completedIndex == total ? 36 : 0
+    return base + curve + finishBonus
 }
