@@ -1,8 +1,14 @@
 # DailyDesk
 
-DailyDesk is a lightweight macOS desktop day planner: a transparent glass widget that sits on your desktop, shows the few tasks that matter today, and rewards completed work with a tiny desktop pet.
+DailyDesk is a native macOS glass desktop planner with a tiny desktop pet: it sits on your wallpaper, keeps today's tasks visible, and turns completion into a small local reward loop.
 
 ![DailyDesk screenshot](Screenshots/dailydesk_desktop.png)
+
+<p align="center">
+  <img src="Screenshots/azusa_pet_idle.png" width="520" alt="DailyDesk Azusa desktop pet preview">
+</p>
+
+> v0.2.1 adds the Azusa-style pixel pet asset pack while keeping the original AppKit-drawn pet as a fallback. Everything is local: no accounts, no network sync, no activity tracking.
 
 ## Features
 
@@ -17,7 +23,8 @@ DailyDesk is a lightweight macOS desktop day planner: a transparent glass widget
 - Transparent scrolling task area when the list exceeds available screen height.
 - Click-to-complete progress ring.
 - Completion rewards with local-only coins.
-- A tiny desktop pet that levels up as you finish more tasks.
+- A tiny Azusa-style pixel desktop pet that changes mood as today's progress grows.
+- AppKit-drawn pet fallback when bundled pet assets are unavailable.
 - Calendar warehouse for recent daily completion records.
 - Virtual shop for pet accessories such as ribbons, scarves, stars, and crowns.
 - Configurable quick-open targets for local files and links.
@@ -42,6 +49,8 @@ The script creates:
 ```text
 Build/DailyDesk.app
 ```
+
+Pet assets under `Resources/PetAssets/` are copied into the app bundle by the release script.
 
 ## CLI
 
@@ -118,13 +127,14 @@ The floating window intentionally keeps a few AppKit details from the original p
 - `adjustWindowHeight(forTaskCount:)` keeps task rows at a stable height and grows the window before falling back to a transparent scroll view.
 - Reward state is saved locally inside `AppState`; completing the same task repeatedly does not mint duplicate coins.
 - The calendar warehouse and virtual shop are normal AppKit panel windows, not background monitors.
+- The pixel pet is loaded from `Contents/Resources/PetAssets/Azusa`; if those resources are missing, `PetView` automatically falls back to the original vector-drawn pet.
 
 Do not remove these pieces unless you have a replacement tested inside a borderless `NSPanel`/`NSWindow`.
 
 ## Roadmap
 
 - v0.1: Engineering cleanup, configurable templates, GitHub release build.
-- v0.2: Local reward loop, desktop pet, calendar warehouse, virtual shop.
+- v0.2: Local reward loop, desktop pet, calendar warehouse, virtual shop, pixel pet assets.
 - v0.3: Menu bar item, window recovery, import/export config.
 - v0.4: Multiple task sets and richer template editor.
 - v0.5: User-consented Login Item helper for daily auto-open.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-06-18
+
+- Added bundled Azusa-style pixel pet assets for the main desktop widget.
+- Updated `PetView` to load bundled pet sprites first and fall back to the original AppKit-drawn pet if resources are unavailable.
+- Updated the release build script to copy pet assets into the macOS app bundle.
+- Refreshed the README hero section with desktop pet positioning and asset notes.
+
 ## 0.2.0 - 2026-06-04
 
 - Added a local reward loop: completing tasks grants coins, with higher rewards for urgent tasks and full-day completion.

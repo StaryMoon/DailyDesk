@@ -85,11 +85,75 @@ final class RingView: NSView {
 
 final class PetView: NSView {
     var equippedItemID: String?
-    var completionProgress: CGFloat = 0
-    var totalCoins: Int = 0
+    var completionProgress: CGFloat = 0 { didSet { needsDisplay = true } }
+    var totalCoins: Int = 0 { didSet { needsDisplay = true } }
+
+    private static var spriteCache: [String: NSImage] = [:]
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
+        if drawAzusaSprite() {
+            drawAccessoryOverlay()
+            drawLevelText()
+            return
+        }
+
+        drawFallbackPet()
+        drawLevelText()
+    }
+
+    private func drawAzusaSprite() -> Bool {
+        guard let image = azusaImage() else { return false }
+        let frameHeight = image.size.height
+        let frameWidth = max(1, min(image.size.width, frameHeight * 120 / 130))
+        let source = NSRect(x: 0, y: 0, width: frameWidth, height: frameHeight)
+        let destination = bounds.insetBy(dx: 0, dy: 4)
+        image.draw(in: destination, from: source, operation: .sourceOver, fraction: 1.0, respectFlipped: true, hints: [.interpolation: NSImageInterpolation.none])
+        return true
+    }
+
+    private func azusaImage() -> NSImage? {
+        let name: String
+        if completionProgress >= 0.999 {
+            name = "happy-jump"
+        } else if completionProgress >= 0.55 {
+            name = "coding"
+        } else {
+            name = "idle"
+        }
+
+        if let cached = Self.spriteCache[name] {
+            return cached
+        }
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png", subdirectory: "PetAssets/Azusa"),
+              let image = NSImage(contentsOf: url)
+        else {
+            return nil
+        }
+        Self.spriteCache[name] = image
+        return image
+    }
+
+    private func drawAccessoryOverlay() {
+        guard equippedItemID != nil else { return }
+        let bodyRect = NSRect(x: bounds.midX - 18, y: bounds.midY - 16, width: 36, height: 34)
+        drawAccessory(in: bodyRect)
+    }
+
+    private func drawLevelText() {
+        let level = max(1, totalCoins / 120 + 1)
+        let text = "Lv \(level)" as NSString
+        text.draw(
+            in: NSRect(x: bounds.midX - 22, y: 0, width: 44, height: 14),
+            withAttributes: [
+                .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .semibold),
+                .foregroundColor: NSColor.white.withAlphaComponent(0.66),
+                .paragraphStyle: centeredParagraph()
+            ]
+        )
+    }
+
+    private func drawFallbackPet() {
         let rect = bounds.insetBy(dx: 6, dy: 6)
         let bodyRect = NSRect(x: rect.midX - 18, y: rect.midY - 16, width: 36, height: 34)
         let body = NSBezierPath(roundedRect: bodyRect, xRadius: 18, yRadius: 18)
@@ -133,17 +197,6 @@ final class PetView: NSView {
         NSBezierPath(ovalIn: NSRect(x: bodyRect.maxX - 3, y: bodyRect.maxY - 2, width: 8, height: 8)).fill()
 
         drawAccessory(in: bodyRect)
-
-        let level = max(1, totalCoins / 120 + 1)
-        let text = "Lv \(level)" as NSString
-        text.draw(
-            in: NSRect(x: bounds.midX - 22, y: 0, width: 44, height: 14),
-            withAttributes: [
-                .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .semibold),
-                .foregroundColor: NSColor.white.withAlphaComponent(0.66),
-                .paragraphStyle: centeredParagraph()
-            ]
-        )
     }
 
     private func drawAccessory(in bodyRect: NSRect) {
