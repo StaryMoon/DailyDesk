@@ -8,6 +8,8 @@ DailyDesk is a native macOS glass desktop planner with a tiny desktop pet: it si
   <img src="Screenshots/azusa_pet_idle.png" width="520" alt="DailyDesk Azusa desktop pet preview">
 </p>
 
+<sub>Screenshots are captured from the local DailyDesk macOS app build and bundled pixel-pet assets. They are product screenshots, not AI-generated artwork.</sub>
+
 > v0.2.1 adds the Azusa-style pixel pet asset pack while keeping the original AppKit-drawn pet as a fallback. Everything is local: no accounts, no network sync, no activity tracking.
 
 ## Features
